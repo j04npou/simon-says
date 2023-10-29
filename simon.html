@@ -3,8 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Simon Says</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<script>
+    function paintGame(){
+        var upBtns = document.createElement('div');
+        var downBtns = document.createElement('div');
 
+        var buttonGreen = document.createElement('button');
+        buttonGreen.id = 'green';
+
+        var buttonRed = document.createElement('button');
+        buttonRed.id = 'red';
+
+        var buttonYellow = document.createElement('button');
+        buttonYellow.id = 'yellow';
+
+        var buttonBlue = document.createElement('button');
+        buttonBlue.id = 'blue';
+
+        upBtns.appendChild(buttonGreen);
+        upBtns.appendChild(buttonRed);
+        downBtns.appendChild(buttonYellow);
+        downBtns.appendChild(buttonBlue);
+
+        document.body.appendChild(upBtns);
+        document.body.appendChild(downBtns);
+    }
+
+    paintGame();
+</script>
 </body>
 </html>
