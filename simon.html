@@ -7,25 +7,28 @@
 </head>
 <body>
 <script>
+    var gap = 50;
+    var miliseconds = 1000;
+
     function paintGame(){
         var upBtns = document.createElement('div');
         var downBtns = document.createElement('div');
 
         var buttonGreen = document.createElement('button');
         buttonGreen.id = 'green';
-        buttonGreen.addEventListener('click', play);
+        buttonGreen.addEventListener('click', clickPlay);
 
         var buttonRed = document.createElement('button');
         buttonRed.id = 'red';
-        buttonRed.addEventListener('click', play);
+        buttonRed.addEventListener('click', clickPlay);
 
         var buttonYellow = document.createElement('button');
         buttonYellow.id = 'yellow';
-        buttonYellow.addEventListener('click', play);
+        buttonYellow.addEventListener('click', clickPlay);
 
         var buttonBlue = document.createElement('button');
         buttonBlue.id = 'blue';
-        buttonBlue.addEventListener('click', play);
+        buttonBlue.addEventListener('click', clickPlay);
 
         upBtns.appendChild(buttonGreen);
         upBtns.appendChild(buttonRed);
@@ -39,6 +42,10 @@
         document.body.appendChild(upBtns);
         document.body.appendChild(downBtns);
         document.body.appendChild(playButton);
+    }
+
+    function clickPlay(){
+        play(this.id, 200)
     }
 
     //if you have another AudioContext class use that one, as some browsers have a limit
@@ -67,29 +74,38 @@
         oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
     }
 
-    function play(color, miliseconds){
+    function play(color, duration){
         var tone = 0;
-        console.log(color);
+        console.log("Este es el color de la función play:",color);
 
         switch (color) {
             case 'green':
                 console.log('Botón verde');
-                tone = 784;
+                tone = 392;
                 break;
             case 'red':
                 console.log('Botón rojo');
-                tone = 330;
+                tone = 261;
                 break;
             case 'blue':
                 console.log('Botón azul');
-                tone = 392;
+                tone = 329;
                 break;
             case 'yellow':
                 console.log('Botón amarillo');
-                tone = 262;
+                tone = 440;
                 break;
         }
-        beep(miliseconds||250,tone);
+        beep(duration||miliseconds-gap,tone);
+        ilumineColor(color, duration||miliseconds-gap);
+    }
+
+    function ilumineColor(color, miliseconds){
+        console.log(`#${color}`)
+        document.querySelector("#"+color).classList.add("light");
+        setTimeout(function (){
+            document.querySelector("#"+color).classList.remove("light");
+        },miliseconds)
     }
 
     function dificultyMenu(){
@@ -137,18 +153,17 @@
     function game(){
         document.querySelector('#menu').remove();
         var dificulty = this.id;
-        var duration = 0;
-        var simonArray = ["red", "green","yellow"];
+        var simonArray = ["red", "red","red"];
 
         switch (dificulty){
             case 'easy':
-                duration = 2000;
+                miliseconds = 2000;
                 break;
             case 'medium':
-                duration = 1000;
+                miliseconds = 1000;
                 break;
             default:
-                duration = 500;
+                miliseconds = 500;
                 break;
         }
 
@@ -156,31 +171,31 @@
         turnText.id = 'turn';
         document.body.appendChild(turnText);
 
-        simonArray = simon(simonArray, duration);
+        simonArray = simon(simonArray);
         console.log('--------------------')
         console.log(simonArray.length)
     }
 
-    function simon(simonArray, duration){
+    function simon(simonArray){
 
         document.querySelector('#turn').innerHTML = 'Simón dice...';
 
         simonArray.push(randomColor());
-        simonPlays(simonArray, duration);
+        simonPlays(simonArray);
 
         // console.log(simonArray);
         // turnText.remove();
         return simonArray;
     }
 
-    function simonPlays(simonArray, duration){
+    function simonPlays(simonArray){
         for (var i = 0; i < simonArray.length; i++) {
             setTimeout(function (color){
                 console.log(color);
-                play(color, duration);
-            },i*duration,simonArray[i]);
+                play(color, miliseconds);
+            },i*miliseconds,simonArray[i]);
         }
-        setTimeout(player, (simonArray.length)*duration)
+        setTimeout(player, (simonArray.length)*miliseconds)
     }
 
     function player(){
