@@ -13,26 +13,200 @@
 
         var buttonGreen = document.createElement('button');
         buttonGreen.id = 'green';
+        buttonGreen.addEventListener('click', play);
 
         var buttonRed = document.createElement('button');
         buttonRed.id = 'red';
+        buttonRed.addEventListener('click', play);
 
         var buttonYellow = document.createElement('button');
         buttonYellow.id = 'yellow';
+        buttonYellow.addEventListener('click', play);
 
         var buttonBlue = document.createElement('button');
         buttonBlue.id = 'blue';
+        buttonBlue.addEventListener('click', play);
 
         upBtns.appendChild(buttonGreen);
         upBtns.appendChild(buttonRed);
         downBtns.appendChild(buttonYellow);
         downBtns.appendChild(buttonBlue);
 
+        var playButton = document.createElement('button');
+        playButton.innerHTML = "Play";
+        playButton.addEventListener('click', dificultyMenu);
+
         document.body.appendChild(upBtns);
         document.body.appendChild(downBtns);
+        document.body.appendChild(playButton);
     }
 
-    paintGame();
+    //if you have another AudioContext class use that one, as some browsers have a limit
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
+
+    //All arguments are optional:
+
+    //duration of the tone in milliseconds. Default is 500
+    //frequency of the tone in hertz. default is 440
+    //volume of the tone. Default is 1, off is 0.
+    //type of tone. Possible values are sine, square, sawtooth, triangle, and custom. Default is sine.
+    //callback to use on end of tone
+    function beep(duration, frequency, volume, type, callback) {
+        var oscillator = audioCtx.createOscillator();
+        var gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (volume){gainNode.gain.value = volume;}
+        if (frequency){oscillator.frequency.value = frequency;}
+        if (type){oscillator.type = type;}
+        if (callback){oscillator.onended = callback;}
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+    }
+
+    function play(color, miliseconds){
+        var tone = 0;
+        console.log(color);
+
+        switch (color) {
+            case 'green':
+                console.log('Botón verde');
+                tone = 784;
+                break;
+            case 'red':
+                console.log('Botón rojo');
+                tone = 330;
+                break;
+            case 'blue':
+                console.log('Botón azul');
+                tone = 392;
+                break;
+            case 'yellow':
+                console.log('Botón amarillo');
+                tone = 262;
+                break;
+        }
+        beep(miliseconds||250,tone);
+    }
+
+    function dificultyMenu(){
+        this.remove();
+
+        var menu = document.createElement('div');
+        menu.id = 'menu';
+
+        var title = document.createElement('h2');
+        title.innerHTML = 'Elige la dificultad';
+
+        var description = document.createElement('p');
+        description.innerHTML =     `Fácil --> 2 segundos<br>
+                                    Normal --> 1 segundo<br>
+                                    Difícil --> 0,5 segundos`;
+
+        var dificultyButtons = document.createElement('div');
+
+        var dificultyEasy = document.createElement('button');
+        dificultyEasy.innerHTML = 'Fácil';
+        dificultyEasy.id = 'easy';
+        dificultyEasy.addEventListener('click', game);
+
+        var dificultyMedium = document.createElement('button');
+        dificultyMedium.innerHTML = 'Normal';
+        dificultyMedium.id = 'medium';
+        dificultyMedium.addEventListener('click', game);
+
+        var dificultyHard = document.createElement('button');
+        dificultyHard.innerHTML = 'Dificil';
+        dificultyHard.id = 'hard';
+        dificultyHard.addEventListener('click', game);
+
+        dificultyButtons.appendChild(dificultyEasy);
+        dificultyButtons.appendChild(dificultyMedium);
+        dificultyButtons.appendChild(dificultyHard);
+
+        menu.appendChild(title);
+        menu.appendChild(description);
+        menu.appendChild(dificultyButtons);
+
+        document.body.appendChild(menu);
+    }
+
+    function game(){
+        document.querySelector('#menu').remove();
+        var dificulty = this.id;
+        var duration = 0;
+        var simonArray = ["red", "green","yellow"];
+
+        switch (dificulty){
+            case 'easy':
+                duration = 2000;
+                break;
+            case 'medium':
+                duration = 1000;
+                break;
+            default:
+                duration = 500;
+                break;
+        }
+
+        var turnText = document.createElement('h2');
+        turnText.id = 'turn';
+        document.body.appendChild(turnText);
+
+        simonArray = simon(simonArray, duration);
+        console.log('--------------------')
+        console.log(simonArray.length)
+    }
+
+    function simon(simonArray, duration){
+
+        document.querySelector('#turn').innerHTML = 'Simón dice...';
+
+        simonArray.push(randomColor());
+        simonPlays(simonArray, duration);
+
+        // console.log(simonArray);
+        // turnText.remove();
+        return simonArray;
+    }
+
+    function simonPlays(simonArray, duration){
+        for (var i = 0; i < simonArray.length; i++) {
+            setTimeout(function (color){
+                console.log(color);
+                play(color, duration);
+            },i*duration,simonArray[i]);
+        }
+        setTimeout(player, (simonArray.length)*duration)
+    }
+
+    function player(){
+
+        document.querySelector('#turn').innerHTML = 'Jugador dice...';
+    }
+
+    function randomColor(){
+        var rndNumber = Math.round(Math.random() * 3);
+        switch (rndNumber){
+            case 0:
+                return 'green';
+            case 1:
+                return 'red';
+            case 2:
+                return 'blue';
+            default:
+                return 'yellow';
+        }
+    }
+
+    function init(){
+        paintGame();
+    }
+
+    init();
 </script>
 </body>
 </html>
