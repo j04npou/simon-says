@@ -7,8 +7,11 @@
 </head>
 <body>
 <script>
+    var simonArray = [];
+    var playerMove = 0;
     var gap = 50;
     var miliseconds = 1000;
+    var isSimonTurn = true;
 
     function paintGame(){
         var upBtns = document.createElement('div');
@@ -16,19 +19,19 @@
 
         var buttonGreen = document.createElement('button');
         buttonGreen.id = 'green';
-        buttonGreen.addEventListener('click', clickPlay);
+        buttonGreen.addEventListener('click', playerClick);
 
         var buttonRed = document.createElement('button');
         buttonRed.id = 'red';
-        buttonRed.addEventListener('click', clickPlay);
+        buttonRed.addEventListener('click', playerClick);
 
         var buttonYellow = document.createElement('button');
         buttonYellow.id = 'yellow';
-        buttonYellow.addEventListener('click', clickPlay);
+        buttonYellow.addEventListener('click', playerClick);
 
         var buttonBlue = document.createElement('button');
         buttonBlue.id = 'blue';
-        buttonBlue.addEventListener('click', clickPlay);
+        buttonBlue.addEventListener('click', playerClick);
 
         upBtns.appendChild(buttonGreen);
         upBtns.appendChild(buttonRed);
@@ -44,8 +47,55 @@
         document.body.appendChild(playButton);
     }
 
-    function clickPlay(){
-        play(this.id, 200)
+    function playerClick(){
+        if (!isSimonTurn) {
+            play(this.id, 200)
+            if (simonArray[playerMove] === this.id){
+                if (simonArray.length === playerMove+1){
+                    isSimonTurn = true;
+                    nextLevel();
+                    setTimeout(simon,2000);
+                }
+            } else {
+                isSimonTurn = true;
+                gameOver();
+            }
+
+            playerMove++;
+        }
+    }
+
+    function gameOver(){
+        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${playerMove}😼`;
+        //(timeout) Comprobar si se está en el top 10
+    }
+
+    //top10()
+    //comporbar si es mejor que el peor del top 10
+    //si sí añadir con nombre
+    //ordena array
+    //actualizar tabla
+    //pintar boton play
+
+    function nextLevel(){
+        var flash = 70;
+        document.querySelector('#turn').innerHTML = `🎉RONDA ${playerMove+1} SUPERADA🎉`;
+
+        var blink = setInterval(function () {
+            ilumineColor('green', flash);
+            setTimeout(function () {
+                ilumineColor('red', flash)
+            }, flash);
+            setTimeout(function () {
+                ilumineColor('blue', flash)
+            }, flash*2);
+            setTimeout(function () {
+                ilumineColor('yellow', flash)
+            }, flash*3);
+        },flash*4)
+        setTimeout(function (){
+            clearInterval(blink);
+        },flash*12);
     }
 
     //if you have another AudioContext class use that one, as some browsers have a limit
@@ -96,8 +146,12 @@
                 tone = 440;
                 break;
         }
-        beep(duration||miliseconds-gap,tone);
-        ilumineColor(color, duration||miliseconds-gap);
+        if (isSimonTurn) {
+            duration = miliseconds;
+        }
+
+        beep(duration, tone);
+        ilumineColor(color, duration);
     }
 
     function ilumineColor(color, miliseconds){
@@ -153,8 +207,6 @@
     function game(){
         document.querySelector('#menu').remove();
         var dificulty = this.id;
-        var simonArray = ["red", "red","red"];
-
         switch (dificulty){
             case 'easy':
                 miliseconds = 2000;
@@ -168,37 +220,38 @@
         }
 
         var turnText = document.createElement('h2');
+
         turnText.id = 'turn';
         document.body.appendChild(turnText);
 
-        simonArray = simon(simonArray);
+        simon();
+
         console.log('--------------------')
         console.log(simonArray.length)
     }
 
-    function simon(simonArray){
+    function simon(){
+        isSimonTurn = true;
 
         document.querySelector('#turn').innerHTML = 'Simón dice...';
 
         simonArray.push(randomColor());
-        simonPlays(simonArray);
-
-        // console.log(simonArray);
-        // turnText.remove();
-        return simonArray;
+        simonPlays();
     }
 
-    function simonPlays(simonArray){
+    function simonPlays(){
         for (var i = 0; i < simonArray.length; i++) {
             setTimeout(function (color){
-                console.log(color);
-                play(color, miliseconds);
-            },i*miliseconds,simonArray[i]);
+                // console.log(color);
+                play(color);
+            },i*(miliseconds+gap),simonArray[i]);
         }
-        setTimeout(player, (simonArray.length)*miliseconds)
+        setTimeout(player, (simonArray.length)*(miliseconds+gap))
     }
 
     function player(){
+        isSimonTurn = false;
+        playerMove = 0;
 
         document.querySelector('#turn').innerHTML = 'Jugador dice...';
     }
@@ -217,11 +270,7 @@
         }
     }
 
-    function init(){
-        paintGame();
-    }
-
-    init();
+    paintGame();
 </script>
 </body>
 </html>
