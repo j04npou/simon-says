@@ -7,13 +7,20 @@
 </head>
 <body>
 <script>
-    var simonArray = [];
+    var arraySimon = [];
+    var arrayTop10 = [];
     var playerMove = 0;
     var gap = 50;
     var miliseconds = 1000;
     var isSimonTurn = true;
 
     function paintGame(){
+        var ranquing = document.createElement('div');
+        ranquing.id = 'ranquing';
+
+        var colorBtns = document.createElement('div');
+        colorBtns.id = 'colorBtns';
+
         var upBtns = document.createElement('div');
         var downBtns = document.createElement('div');
 
@@ -38,20 +45,20 @@
         downBtns.appendChild(buttonYellow);
         downBtns.appendChild(buttonBlue);
 
-        var playButton = document.createElement('button');
-        playButton.innerHTML = "Play";
-        playButton.addEventListener('click', dificultyMenu);
+        colorBtns.appendChild(upBtns);
+        colorBtns.appendChild(downBtns);
 
-        document.body.appendChild(upBtns);
-        document.body.appendChild(downBtns);
-        document.body.appendChild(playButton);
+        document.body.appendChild(ranquing);
+        document.body.appendChild(colorBtns);
+
+        paintPlayBtn();
     }
 
     function playerClick(){
         if (!isSimonTurn) {
             play(this.id, 200)
-            if (simonArray[playerMove] === this.id){
-                if (simonArray.length === playerMove+1){
+            if (arraySimon[playerMove] === this.id){
+                if (arraySimon.length === playerMove+1){
                     isSimonTurn = true;
                     nextLevel();
                     setTimeout(simon,2000);
@@ -65,12 +72,121 @@
         }
     }
 
-    function gameOver(){
-        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${playerMove}😼`;
-        //(timeout) Comprobar si se está en el top 10
+    function paintPlayBtn(){
+        var playButton = document.createElement('button');
+        playButton.innerHTML = "Play";
+        playButton.addEventListener('click', dificultyMenu);
+        document.body.appendChild(playButton);
     }
 
-    //top10()
+    function gameOver(){
+        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${arraySimon.length-1}😼`;
+
+        if (isTop10()) {
+            paintTop10Form();
+            watchInputRegister();
+        } else {
+            setTimeout(function () {
+                document.querySelector('#turn').remove();
+                paintPlayBtn();
+            }, 3000);
+        }
+    }
+
+    function isTop10(){
+        if (arraySimon.length > 1 && (arrayTop10.length < 10 || arraySimon.length-1 > arrayTop10[9].score)){
+            return true;
+        }
+        return false;
+    }
+    
+    function paintTop10Form() {
+        var containerForm = document.createElement('div');
+        containerForm.id = 'containerForm';
+
+        var formTitle = document.createElement('label')
+        formTitle.setAttribute('for','playerName');
+        formTitle.innerText = 'Introduce tu nombre:';
+
+        var formInput = document.createElement('input');
+        formInput.id = 'playerName';
+        formInput.type = 'text';
+
+        var formButton = document.createElement('button');
+        formButton.id = 'addScoreBtn';
+        formButton.innerText = 'Registrar';
+
+        containerForm.appendChild(formTitle);
+        containerForm.appendChild(formInput);
+        containerForm.appendChild(formButton);
+
+        document.body.appendChild(containerForm);
+
+        document.querySelector('#playerName').focus();
+    }
+
+    function paintTop10Ranquing(){
+        var table = document.createElement('table');
+
+        for (var i = 0; i < arrayTop10.length; i++) {
+            var tr = document.createElement('tr');
+            var name = document.createElement('td');
+            name.innerText = arrayTop10[i].name;
+            var score = document.createElement('td');
+            score.innerText = arrayTop10[i].score;
+
+            tr.appendChild(name);
+            tr.appendChild(score);
+
+            table.appendChild(tr);
+        }
+
+        if (document.querySelector('table')) {
+            document.querySelector('#ranquing').removeChild(document.querySelector('table'));
+        }
+        document.querySelector('#ranquing').appendChild(table);
+    }
+
+    function watchInputRegister(){
+        document.querySelector('#addScoreBtn').addEventListener('click', registerPlayer);
+        document.querySelector('#playerName').addEventListener('keypress', function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                document.querySelector('#addScoreBtn').click();
+            }
+        });
+    }
+
+    function registerPlayer(){
+        var name = document.querySelector('#playerName').value.trim();
+        if (name === ''){
+            console.log('No name');
+        } else {
+            var playerScore = {
+                name: name,
+                score: arraySimon.length-1
+            };
+
+            if (arrayTop10.length >= 10){
+                arrayTop10.pop();
+            }
+            arrayTop10.push(playerScore);
+            arrayTop10.sort(function(a, b) {
+                return b.score - a.score;
+            });
+            console.log(arrayTop10);
+
+            document.querySelector('#turn').remove();
+            document.querySelector('#containerForm').remove();
+            paintPlayBtn();
+            paintTop10Ranquing();
+        }
+    }
+
+    // top10()
     //comporbar si es mejor que el peor del top 10
     //si sí añadir con nombre
     //ordena array
@@ -79,7 +195,7 @@
 
     function nextLevel(){
         var flash = 70;
-        document.querySelector('#turn').innerHTML = `🎉RONDA ${playerMove+1} SUPERADA🎉`;
+        document.querySelector('#turn').innerHTML = `🎉RONDA ${arraySimon.length} SUPERADA🎉`;
 
         var blink = setInterval(function () {
             ilumineColor('green', flash);
@@ -205,6 +321,7 @@
     }
 
     function game(){
+        arraySimon = [];
         document.querySelector('#menu').remove();
         var dificulty = this.id;
         switch (dificulty){
@@ -227,7 +344,7 @@
         simon();
 
         console.log('--------------------')
-        console.log(simonArray.length)
+        console.log(arraySimon.length)
     }
 
     function simon(){
@@ -235,18 +352,18 @@
 
         document.querySelector('#turn').innerHTML = 'Simón dice...';
 
-        simonArray.push(randomColor());
+        arraySimon.push(randomColor());
         simonPlays();
     }
 
     function simonPlays(){
-        for (var i = 0; i < simonArray.length; i++) {
+        for (var i = 0; i < arraySimon.length; i++) {
             setTimeout(function (color){
                 // console.log(color);
                 play(color);
-            },i*(miliseconds+gap),simonArray[i]);
+            },i*(miliseconds+gap),arraySimon[i]);
         }
-        setTimeout(player, (simonArray.length)*(miliseconds+gap))
+        setTimeout(player, (arraySimon.length)*(miliseconds+gap))
     }
 
     function player(){
