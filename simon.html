@@ -55,6 +55,106 @@
         paintPlayBtn();
     }
 
+    function paintPlayBtn(){
+        var playButton = document.createElement('button');
+        playButton.innerHTML = "Play";
+        playButton.addEventListener('click', dificultyMenu);
+        document.body.appendChild(playButton);
+    }
+
+    function dificultyMenu(){
+        this.remove();
+
+        var menu = document.createElement('div');
+        menu.id = 'menu';
+
+        var title = document.createElement('h2');
+        title.innerHTML = 'Elige la dificultad';
+
+        var description = document.createElement('p');
+        description.innerHTML =     `Fácil --> 2 segundos<br>
+                                    Normal --> 1 segundo<br>
+                                    Difícil --> 0,5 segundos`;
+
+        var dificultyButtons = document.createElement('div');
+
+        var dificultyEasy = document.createElement('button');
+        dificultyEasy.innerHTML = 'Fácil';
+        dificultyEasy.id = 'easy';
+        dificultyEasy.addEventListener('click', game);
+
+        var dificultyMedium = document.createElement('button');
+        dificultyMedium.innerHTML = 'Normal';
+        dificultyMedium.id = 'medium';
+        dificultyMedium.addEventListener('click', game);
+
+        var dificultyHard = document.createElement('button');
+        dificultyHard.innerHTML = 'Dificil';
+        dificultyHard.id = 'hard';
+        dificultyHard.addEventListener('click', game);
+
+        dificultyButtons.appendChild(dificultyEasy);
+        dificultyButtons.appendChild(dificultyMedium);
+        dificultyButtons.appendChild(dificultyHard);
+
+        menu.appendChild(title);
+        menu.appendChild(description);
+        menu.appendChild(dificultyButtons);
+
+        document.body.appendChild(menu);
+    }
+
+    // Función para iniciar el juego con la dificultad seleccionada
+    function game(){
+        arraySimon = [];
+        document.querySelector('#menu').remove();
+        var dificulty = this.id;
+        switch (dificulty){
+            case 'easy':
+                miliseconds = 2000;
+                break;
+            case 'medium':
+                miliseconds = 1000;
+                break;
+            default:
+                miliseconds = 500;
+                break;
+        }
+
+        var turnText = document.createElement('h2');
+
+        turnText.id = 'turn';
+        document.body.appendChild(turnText);
+
+        simon();
+    }
+
+    function simon(){
+        isSimonTurn = true;
+
+        document.querySelector('#turn').innerHTML = 'Simón dice...';
+
+        arraySimon.push(randomColor());
+        simonPlays();
+    }
+
+    // Función para que Simon reproduzca la secuencia
+    function simonPlays(){
+        for (var i = 0; i < arraySimon.length; i++) {
+            setTimeout(function (color){
+                play(color);
+            },i*(miliseconds+gap),arraySimon[i]);
+        }
+        setTimeout(player, (arraySimon.length)*(miliseconds+gap))
+    }
+
+    function player(){
+        isSimonTurn = false;
+        playerMove = 0;
+
+        document.querySelector('#turn').innerHTML = 'Jugador dice...';
+    }
+
     function playerClick(){
         if (!isSimonTurn) {
             play(this.id, 200)
@@ -75,27 +175,99 @@
         }
     }
 
-    function paintPlayBtn(){
-        var playButton = document.createElement('button');
-        playButton.innerHTML = "Play";
-        playButton.addEventListener('click', dificultyMenu);
-        document.body.appendChild(playButton);
+    function nextLevel(){
+        var flash = 70;
+        // Muestra un mensaje indicando que se ha superado el nivel
+        document.querySelector('#turn').innerHTML = `🎉RONDA ${arraySimon.length} SUPERADA🎉`;
+
+        // Hace parpadear los colores en forma circular
+        var blink = setInterval(function () {
+            ilumineColor('green', flash);
+            setTimeout(function () {
+                ilumineColor('red', flash)
+            }, flash);
+            setTimeout(function () {
+                ilumineColor('blue', flash)
+            }, flash*2);
+            setTimeout(function () {
+                ilumineColor('yellow', flash)
+            }, flash*3);
+        },flash*4)
+        setTimeout(function (){
+            clearInterval(blink);
+        },flash*12);
     }
 
-    function gameOver(){
-        // Muestra el resultado del juego
-        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${arraySimon.length-1}😼`;
+    // Función para reproducir un tono
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
 
-        // Comprueba si el jugador entra en el top 10 y
-        // muestra el formulario para registrar la puntuación
-        if (isTop10()) {
-            paintTop10Form();
-            watchInputRegister();
-        } else {
-            setTimeout(function () {
-                document.querySelector('#turn').remove();
-                paintPlayBtn();
-            }, 3000);
+    //All arguments are optional:
+
+    //duration of the tone in milliseconds. Default is 500
+    //frequency of the tone in hertz. default is 440
+    //volume of the tone. Default is 1, off is 0.
+    //type of tone. Possible values are sine, square, sawtooth, triangle, and custom. Default is sine.
+    //callback to use on end of tone
+    function beep(duration, frequency, volume, type, callback) {
+        var oscillator = audioCtx.createOscillator();
+        var gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (volume){gainNode.gain.value = volume;}
+        if (frequency){oscillator.frequency.value = frequency;}
+        if (type){oscillator.type = type;}
+        if (callback){oscillator.onended = callback;}
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+    }
+
+    // Función para reproducir un sonido y destacar un color
+    function play(color, duration){
+        var tone = 0;
+
+        switch (color) {
+            case 'green':
+                tone = 392;
+                break;
+            case 'red':
+                tone = 261;
+                break;
+            case 'blue':
+                tone = 329;
+                break;
+            case 'yellow':
+                tone = 440;
+                break;
+        }
+        if (isSimonTurn) {
+            duration = miliseconds;
+        }
+
+        beep(duration, tone);
+        ilumineColor(color, duration);
+    }
+
+    function ilumineColor(color, miliseconds){
+        document.querySelector("#"+color).classList.add("light");
+        setTimeout(function (){
+            document.querySelector("#"+color).classList.remove("light");
+        },miliseconds)
+    }
+
+    function randomColor(){
+        var rndNumber = Math.round(Math.random() * 3);
+        switch (rndNumber){
+            case 0:
+                return 'green';
+            case 1:
+                return 'red';
+            case 2:
+                return 'blue';
+            default:
+                return 'yellow';
         }
     }
 
@@ -194,192 +366,20 @@
         paintTop10Ranquing();
     }
 
-    function nextLevel(){
-        var flash = 70;
-        // Muestra un mensaje indicando que se ha superado el nivel
-        document.querySelector('#turn').innerHTML = `🎉RONDA ${arraySimon.length} SUPERADA🎉`;
+    function gameOver(){
+        // Muestra el resultado del juego
+        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${arraySimon.length-1}😼`;
 
-        // Hace parpadear los colores en forma circular
-        var blink = setInterval(function () {
-            ilumineColor('green', flash);
+        // Comprueba si el jugador entra en el top 10 y
+        // muestra el formulario para registrar la puntuación
+        if (isTop10()) {
+            paintTop10Form();
+            watchInputRegister();
+        } else {
             setTimeout(function () {
-                ilumineColor('red', flash)
-            }, flash);
-            setTimeout(function () {
-                ilumineColor('blue', flash)
-            }, flash*2);
-            setTimeout(function () {
-                ilumineColor('yellow', flash)
-            }, flash*3);
-        },flash*4)
-        setTimeout(function (){
-            clearInterval(blink);
-        },flash*12);
-    }
-
-    // Función para reproducir un tono
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
-
-    //All arguments are optional:
-
-    //duration of the tone in milliseconds. Default is 500
-    //frequency of the tone in hertz. default is 440
-    //volume of the tone. Default is 1, off is 0.
-    //type of tone. Possible values are sine, square, sawtooth, triangle, and custom. Default is sine.
-    //callback to use on end of tone
-    function beep(duration, frequency, volume, type, callback) {
-        var oscillator = audioCtx.createOscillator();
-        var gainNode = audioCtx.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        if (volume){gainNode.gain.value = volume;}
-        if (frequency){oscillator.frequency.value = frequency;}
-        if (type){oscillator.type = type;}
-        if (callback){oscillator.onended = callback;}
-
-        oscillator.start(audioCtx.currentTime);
-        oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
-    }
-
-    // Función para reproducir un sonido y destacar un color
-    function play(color, duration){
-        var tone = 0;
-
-        switch (color) {
-            case 'green':
-                tone = 392;
-                break;
-            case 'red':
-                tone = 261;
-                break;
-            case 'blue':
-                tone = 329;
-                break;
-            case 'yellow':
-                tone = 440;
-                break;
-        }
-        if (isSimonTurn) {
-            duration = miliseconds;
-        }
-
-        beep(duration, tone);
-        ilumineColor(color, duration);
-    }
-
-    function ilumineColor(color, miliseconds){
-        document.querySelector("#"+color).classList.add("light");
-        setTimeout(function (){
-            document.querySelector("#"+color).classList.remove("light");
-        },miliseconds)
-    }
-
-    function dificultyMenu(){
-        this.remove();
-
-        var menu = document.createElement('div');
-        menu.id = 'menu';
-
-        var title = document.createElement('h2');
-        title.innerHTML = 'Elige la dificultad';
-
-        var description = document.createElement('p');
-        description.innerHTML =     `Fácil --> 2 segundos<br>
-                                    Normal --> 1 segundo<br>
-                                    Difícil --> 0,5 segundos`;
-
-        var dificultyButtons = document.createElement('div');
-
-        var dificultyEasy = document.createElement('button');
-        dificultyEasy.innerHTML = 'Fácil';
-        dificultyEasy.id = 'easy';
-        dificultyEasy.addEventListener('click', game);
-
-        var dificultyMedium = document.createElement('button');
-        dificultyMedium.innerHTML = 'Normal';
-        dificultyMedium.id = 'medium';
-        dificultyMedium.addEventListener('click', game);
-
-        var dificultyHard = document.createElement('button');
-        dificultyHard.innerHTML = 'Dificil';
-        dificultyHard.id = 'hard';
-        dificultyHard.addEventListener('click', game);
-
-        dificultyButtons.appendChild(dificultyEasy);
-        dificultyButtons.appendChild(dificultyMedium);
-        dificultyButtons.appendChild(dificultyHard);
-
-        menu.appendChild(title);
-        menu.appendChild(description);
-        menu.appendChild(dificultyButtons);
-
-        document.body.appendChild(menu);
-    }
-
-    // Función para iniciar el juego con la dificultad seleccionada
-    function game(){
-        arraySimon = [];
-        document.querySelector('#menu').remove();
-        var dificulty = this.id;
-        switch (dificulty){
-            case 'easy':
-                miliseconds = 2000;
-                break;
-            case 'medium':
-                miliseconds = 1000;
-                break;
-            default:
-                miliseconds = 500;
-                break;
-        }
-
-        var turnText = document.createElement('h2');
-
-        turnText.id = 'turn';
-        document.body.appendChild(turnText);
-
-        simon();
-    }
-
-    function simon(){
-        isSimonTurn = true;
-
-        document.querySelector('#turn').innerHTML = 'Simón dice...';
-
-        arraySimon.push(randomColor());
-        simonPlays();
-    }
-
-    // Función para que Simon reproduzca la secuencia
-    function simonPlays(){
-        for (var i = 0; i < arraySimon.length; i++) {
-            setTimeout(function (color){
-                play(color);
-            },i*(miliseconds+gap),arraySimon[i]);
-        }
-        setTimeout(player, (arraySimon.length)*(miliseconds+gap))
-    }
-
-    function player(){
-        isSimonTurn = false;
-        playerMove = 0;
-
-        document.querySelector('#turn').innerHTML = 'Jugador dice...';
-    }
-
-    function randomColor(){
-        var rndNumber = Math.round(Math.random() * 3);
-        switch (rndNumber){
-            case 0:
-                return 'green';
-            case 1:
-                return 'red';
-            case 2:
-                return 'blue';
-            default:
-                return 'yellow';
+                document.querySelector('#turn').remove();
+                paintPlayBtn();
+            }, 3000);
         }
     }
 
