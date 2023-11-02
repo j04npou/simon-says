@@ -7,10 +7,11 @@
 </head>
 <body>
 <script>
+    // Variables globales
     var arraySimon = [];
     var arrayTop10 = [];
     var playerMove = 0;
-    var gap = 50;
+    var gap = 50; // Espacio entre destellos de colores
     var miliseconds = 1000;
     var isSimonTurn = true;
 
@@ -59,11 +60,13 @@
             play(this.id, 200)
             if (arraySimon[playerMove] === this.id){
                 if (arraySimon.length === playerMove+1){
+                    // El jugador ha ganado
                     isSimonTurn = true;
                     nextLevel();
                     setTimeout(simon,2000);
                 }
             } else {
+                // El jugador ha perdido
                 isSimonTurn = true;
                 gameOver();
             }
@@ -80,8 +83,11 @@
     }
 
     function gameOver(){
+        // Muestra el resultado del juego
         document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${arraySimon.length-1}😼`;
 
+        // Comprueba si el jugador entra en el top 10 y
+        // muestra el formulario para registrar la puntuación
         if (isTop10()) {
             paintTop10Form();
             watchInputRegister();
@@ -163,40 +169,37 @@
     function registerPlayer(){
         var name = document.querySelector('#playerName').value.trim();
         if (name === ''){
-            console.log('No name');
-        } else {
-            var playerScore = {
-                name: name,
-                score: arraySimon.length-1
-            };
-
-            if (arrayTop10.length >= 10){
-                arrayTop10.pop();
-            }
-            arrayTop10.push(playerScore);
-            arrayTop10.sort(function(a, b) {
-                return b.score - a.score;
-            });
-            console.log(arrayTop10);
-
-            document.querySelector('#turn').remove();
-            document.querySelector('#containerForm').remove();
-            paintPlayBtn();
-            paintTop10Ranquing();
+            // Si el usuario no ha introducido su nombre se le asigna uno por defecto
+            name = 'Anónimo';
         }
-    }
 
-    // top10()
-    //comporbar si es mejor que el peor del top 10
-    //si sí añadir con nombre
-    //ordena array
-    //actualizar tabla
-    //pintar boton play
+        // Crea un objeto con el nombre del jugador y su puntuación
+        var playerScore = {
+            name: name,
+            score: arraySimon.length-1
+        };
+
+        // Actualiza el top 10 y lo ordena
+        if (arrayTop10.length >= 10){
+            arrayTop10.pop();
+        }
+        arrayTop10.push(playerScore);
+        arrayTop10.sort(function(a, b) {
+            return b.score - a.score;
+        });
+
+        document.querySelector('#turn').remove();
+        document.querySelector('#containerForm').remove();
+        paintPlayBtn();
+        paintTop10Ranquing();
+    }
 
     function nextLevel(){
         var flash = 70;
+        // Muestra un mensaje indicando que se ha superado el nivel
         document.querySelector('#turn').innerHTML = `🎉RONDA ${arraySimon.length} SUPERADA🎉`;
 
+        // Hace parpadear los colores en forma circular
         var blink = setInterval(function () {
             ilumineColor('green', flash);
             setTimeout(function () {
@@ -214,7 +217,7 @@
         },flash*12);
     }
 
-    //if you have another AudioContext class use that one, as some browsers have a limit
+    // Función para reproducir un tono
     var audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
 
     //All arguments are optional:
@@ -240,25 +243,21 @@
         oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
     }
 
+    // Función para reproducir un sonido y destacar un color
     function play(color, duration){
         var tone = 0;
-        console.log("Este es el color de la función play:",color);
 
         switch (color) {
             case 'green':
-                console.log('Botón verde');
                 tone = 392;
                 break;
             case 'red':
-                console.log('Botón rojo');
                 tone = 261;
                 break;
             case 'blue':
-                console.log('Botón azul');
                 tone = 329;
                 break;
             case 'yellow':
-                console.log('Botón amarillo');
                 tone = 440;
                 break;
         }
@@ -271,7 +270,6 @@
     }
 
     function ilumineColor(color, miliseconds){
-        console.log(`#${color}`)
         document.querySelector("#"+color).classList.add("light");
         setTimeout(function (){
             document.querySelector("#"+color).classList.remove("light");
@@ -320,6 +318,7 @@
         document.body.appendChild(menu);
     }
 
+    // Función para iniciar el juego con la dificultad seleccionada
     function game(){
         arraySimon = [];
         document.querySelector('#menu').remove();
@@ -342,9 +341,6 @@
         document.body.appendChild(turnText);
 
         simon();
-
-        console.log('--------------------')
-        console.log(arraySimon.length)
     }
 
     function simon(){
@@ -356,10 +352,10 @@
         simonPlays();
     }
 
+    // Función para que Simon reproduzca la secuencia
     function simonPlays(){
         for (var i = 0; i < arraySimon.length; i++) {
             setTimeout(function (color){
-                // console.log(color);
                 play(color);
             },i*(miliseconds+gap),arraySimon[i]);
         }
@@ -387,6 +383,7 @@
         }
     }
 
+    // Inicia el juego pintando la interfaz
     paintGame();
 </script>
 </body>
