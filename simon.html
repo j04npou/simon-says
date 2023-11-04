@@ -52,12 +52,14 @@
         document.body.appendChild(ranquing);
         document.body.appendChild(colorBtns);
 
+        paintTop10Ranquing();
         paintPlayBtn();
     }
 
     function paintPlayBtn(){
         var playButton = document.createElement('button');
         playButton.innerHTML = "Play";
+        playButton.id = 'playbtn';
         playButton.addEventListener('click', dificultyMenu);
         document.body.appendChild(playButton);
     }
@@ -72,25 +74,28 @@
         title.innerHTML = 'Elige la dificultad';
 
         var description = document.createElement('p');
-        description.innerHTML =     `Fácil --> 2 segundos<br>
-                                    Normal --> 1 segundo<br>
-                                    Difícil --> 0,5 segundos`;
+        // description.innerHTML =     `Fácil --> 2 segundos<br>
+        //                             Normal --> 1 segundo<br>
+        //                             Difícil --> 0,5 segundos`;
 
         var dificultyButtons = document.createElement('div');
 
         var dificultyEasy = document.createElement('button');
-        dificultyEasy.innerHTML = 'Fácil';
+        dificultyEasy.innerHTML = 'Facil';
         dificultyEasy.id = 'easy';
+        dificultyEasy.title = '2 segundos';
         dificultyEasy.addEventListener('click', game);
 
         var dificultyMedium = document.createElement('button');
         dificultyMedium.innerHTML = 'Normal';
         dificultyMedium.id = 'medium';
+        dificultyMedium.title = '1 segundo';
         dificultyMedium.addEventListener('click', game);
 
         var dificultyHard = document.createElement('button');
         dificultyHard.innerHTML = 'Dificil';
         dificultyHard.id = 'hard';
+        dificultyHard.title = '0.5 segundos';
         dificultyHard.addEventListener('click', game);
 
         dificultyButtons.appendChild(dificultyEasy);
@@ -132,7 +137,7 @@
     function simon(){
         isSimonTurn = true;
 
-        document.querySelector('#turn').innerHTML = 'Simón dice...';
+        document.querySelector('#turn').innerHTML = 'Simon dice...';
 
         arraySimon.push(randomColor());
         simonPlays();
@@ -178,7 +183,7 @@
     function nextLevel(){
         var flash = 70;
         // Muestra un mensaje indicando que se ha superado el nivel
-        document.querySelector('#turn').innerHTML = `🎉RONDA ${arraySimon.length} SUPERADA🎉`;
+        document.querySelector('#turn').innerHTML = `🎉Ronda ${arraySimon.length} superda🎉`;
 
         // Hace parpadear los colores en forma circular
         var blink = setInterval(function () {
@@ -284,7 +289,7 @@
 
         var formTitle = document.createElement('label')
         formTitle.setAttribute('for','playerName');
-        formTitle.innerText = 'Introduce tu nombre:';
+        formTitle.innerText = 'Introduce tu nombre';
 
         var formInput = document.createElement('input');
         formInput.id = 'playerName';
@@ -305,14 +310,33 @@
 
     function paintTop10Ranquing(){
         var table = document.createElement('table');
+        var trHeader = document.createElement('tr');
+        var thRanking = document.createElement('th');
+        thRanking.innerText = 'Ranking';
+        var thJugador = document.createElement('th');
+        thJugador.innerText = 'Jugador';
+        var thPuntos = document.createElement('th');
+        thPuntos.innerText = 'Puntos';
 
-        for (var i = 0; i < arrayTop10.length; i++) {
+        trHeader.appendChild(thRanking);
+        trHeader.appendChild(thJugador);
+        trHeader.appendChild(thPuntos);
+
+        table.appendChild(trHeader);
+
+        for (var i = 0; i < 10; i++) {
             var tr = document.createElement('tr');
+            var ranking = document.createElement('td');
+            ranking.innerText = i+1;
             var name = document.createElement('td');
-            name.innerText = arrayTop10[i].name;
             var score = document.createElement('td');
-            score.innerText = arrayTop10[i].score;
 
+            if (i < arrayTop10.length) {
+                name.innerText = arrayTop10[i].name;
+                score.innerText = arrayTop10[i].score;
+            }
+
+            tr.appendChild(ranking);
             tr.appendChild(name);
             tr.appendChild(score);
 
@@ -367,8 +391,12 @@
     }
 
     function gameOver(){
+        beep(200,300);
+        beep(200,400);
+        beep(200,500);
+
         // Muestra el resultado del juego
-        document.querySelector('#turn').innerHTML = `😼HAS LLEGADO HASTA LA RONDA ${arraySimon.length-1}😼`;
+        document.querySelector('#turn').innerHTML = `😼Has llegado hasta la ronda ${arraySimon.length-1}😼`;
 
         // Comprueba si el jugador entra en el top 10 y
         // muestra el formulario para registrar la puntuación
